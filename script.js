@@ -1,17 +1,15 @@
-// Google Sheets API Details
 const sheetID = '141Ea_xHBXPi6rItn07EiJMrUjVU7m9AFP8HFJi-Dm8I';
 const apiKey = 'AIzaSyDXlrcHjC6XKDDelU7PGczBI-Bjvl6Nf_A';
-const range = 'standing!A2:E'; // Columns: Rank, Team Name, Placement, Kills, Points
+const range = 'standing!A2:E';
 
-// Function to fetch and update the table
 async function updateTable() {
   const sheetURL = `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${range}?key=${apiKey}`;
-
+  const tbody = document.querySelector("#standing-table tbody");
+  
   try {
     const response = await fetch(sheetURL);
     const data = await response.json();
 
-    const tbody = document.querySelector("#standing-table tbody");
     tbody.innerHTML = ""; // Clear old rows
 
     if (!data.values || data.values.length === 0) {
@@ -19,9 +17,9 @@ async function updateTable() {
       return;
     }
 
-    const rows = data.values; // Array of rows from the sheet
+    const rows = data.values;
     for (let i = 0; i < 12; i++) {
-      const row = rows[i] || ["-", "-", "-", "0", "0"]; // Fill with empty/default values if no data
+      const row = rows[i] || ["-", "-", "-", "0", "0"];
       const [rank, teamName, placement, kills, points] = row;
 
       const tableRow = document.createElement("tr");
@@ -35,10 +33,9 @@ async function updateTable() {
       tbody.appendChild(tableRow);
     }
   } catch (error) {
-    console.error("Error fetching or updating the table:", error);
+    console.error("Error fetching data from Google Sheets:", error);
   }
 }
 
-// Initial fetch and auto-update every second
 updateTable();
 setInterval(updateTable, 1000);
