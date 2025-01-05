@@ -1,41 +1,46 @@
-const sheetID = '141Ea_xHBXPi6rItn07EiJMrUjVU7m9AFP8HFJi-Dm8I';
-const apiKey = 'AIzaSyDXlrcHjC6XKDDelU7PGczBI-Bjvl6Nf_A';
-const range = 'standing!A2:E';
+const apiKey = "AIzaSyDXlrcHjC6XKDDelU7PGczBI-Bjvl6Nf_A";
+const sheetID = "141Ea_xHBXPi6rItn07EiJMrUjVU7m9AFP8HFJi-Dm8I";
+const range = "standing!A2:E";
 
-async function updateTable() {
-  const sheetURL = `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${range}?key=${apiKey}`;
-  const tbody = document.querySelector("#standing-table tbody");
-  
+const tableBody = document.querySelector("#standing-table tbody");
+
+async function fetchSheetData() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${range}?key=${apiKey}`;
   try {
-    const response = await fetch(sheetURL);
+    const response = await fetch(url);
     const data = await response.json();
 
-    tbody.innerHTML = ""; // Clear old rows
-
+    // Check if data is available
     if (!data.values || data.values.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5">No data available</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="5">No data available</td></tr>`;
       return;
     }
 
-    const rows = data.values;
-    for (let i = 0; i < 12; i++) {
-      const row = rows[i] || ["-", "-", "-", "0", "0"];
+    // Clear existing table rows
+    tableBody.innerHTML = "";
+
+    // Populate table rows
+    data.values.forEach((row, index) => {
       const [rank, teamName, placement, kills, points] = row;
 
       const tableRow = document.createElement("tr");
       tableRow.innerHTML = `
-        <td>${rank || i + 1}</td>
+        <td>${rank || index + 1}</td>
         <td>${teamName || '-'}</td>
         <td>${placement || '-'}</td>
         <td>${kills || '0'}</td>
         <td>${points || '0'}</td>
       `;
-      tbody.appendChild(tableRow);
-    }
+      tableBody.appendChild(tableRow);
+    });
   } catch (error) {
-    console.error("Error fetching data from Google Sheets:", error);
+    console.error("Error fetching data:", error);
+    tableBody.innerHTML = `<tr><td colspan="5">Error loading data</td></tr>`;
   }
 }
 
-updateTable();
-setInterval(updateTable, 1000);
+// Automatically refresh the table every second
+setInterval(fetchSheetData, 1000);
+
+// Initial data fetch
+fetchSheetData();
